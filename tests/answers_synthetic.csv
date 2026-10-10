@@ -1,0 +1,16 @@
+case,scenario,tool,use
+R01,S0,,적용
+R02,S1,eraser,적용
+R03,S2,sdelete,적용
+R04,S3,,적용
+R05,S3,,적용
+R06,S4,sdelete,적용
+R07,S4,eraser,적용
+R08,S0,,적용
+R09,S4,eraser,적용
+R10,S4,sdelete,적용
+R11,S4,bleachbit,적용
+R12,S0,,적용
+R13,S0,,적용
+R14,S4,bleachbit,적용
+R15,S0,,적용

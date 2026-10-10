@@ -1,0 +1,9 @@
+{
+  "frozen_at_utc": "2026-10-05 15:42:45",
+  "version": "0.5.1",
+  "sha256": {
+    "signatures.yaml": "7817bffe981854ab3db22971fc596f48d4ea63c14269c2bc0c980966c3d98b7f",
+    "wipetrace.py": "b48150b84758960643a000b7705be5fcad0737160e645391687f193b2a630027",
+    "evaluate.py": "0bdbb6d7b621ac4d0602bb5bddc64d95152d55b924fa9f4abdee1b9d991e4aa3"
+  }
+}

@@ -1,0 +1,86 @@
+# 완전삭제 도구 시그니처 (wipetrace.py 입력)
+# 상태: 고정(v0.6, 2026-10-06; 코드 0.5.1). 시그니처 작성용 실행 5회(R16~R20)의 관찰로 값을 정했다.
+#       고정 이후에는 이 파일과 wipetrace.py·evaluate.py를 수정하지 않는다. 해시와 고정 시각은 freeze_manifest.json, FREEZE.txt에 있다.
+#       (수정하면 이후 실행을 새 적용 자료로 다시 모아야 함)
+# 0.6에서 바뀐 것: Moo0 실행 파일명 기입, east-tec·BleachBit·Moo0·Eraser 이름 규칙을 관찰값으로 교체,
+#       삭제 대기 폴더($Extend\$Deleted) 처리 규칙 추가. 고정 전 초안은 signatures_0.6-draft.bak.yaml, signatures_0.5-draft.bak.yaml에 보관.
+
+meta:
+  version: "0.6"
+  frozen: true
+  note: "작성용 실행 R16~R20 관찰 반영. 2026-10-06 고정"
+
+rules:
+  link_window_min: 30        # N: 실행 시각(Prefetch·UserAssist·BAM)과 저널 삭제 시각의 허용 간격(분)
+  link_slack_min: 2          # 삭제 후 허용(분). BAM은 실행 시작이 아니라 더 늦은 시각이 기록됨(R16~R20: 삭제 후 0초~5분 2초).
+                             # 5회 모두 Prefetch 또는 UserAssist 시각으로 연결되었으므로 2분을 유지한다. MUICache는 시각이 없어 연계에 안 씀
+  burst_window_sec: 300      # T: 한 파일의 첫 덮어쓰기/이름 변경부터 삭제 시점까지 최대 시간(초). R16~R20 관찰값은 0.2초 이하
+  min_renames: 1             # K: 삭제 전 이름 변경 최소 횟수 (R19 BleachBit가 1회)
+  require_overwrite: true    # 삭제 전 DataOverwrite(덮어쓰기) 필요. R16~R20 모두 DataOverwrite가 기록됨
+  truncation_counts_as_overwrite: false  # DataTruncation(크기 절단)은 덮어쓰기로 인정하지 않음(별개 동작)
+  ignore_path_keywords: ["$Recycle.Bin"]        # 휴지통 이동은 완전삭제 패턴에서 제외
+  ignore_name_regex: ["^\\$R[A-Z0-9]{6}", "^\\$I[A-Z0-9]{6}"]
+  # 삭제 대기: Windows는 열려 있는 파일을 지울 때 \$Extend\$Deleted 로 옮기고 24자리 16진수 이름을 붙인 뒤,
+  # 마지막 핸들이 닫힐 때 FileDelete를 기록한다(R18 SDelete: 이동 후 4분 47초 뒤, 시스템 종료 시점).
+  # 이 이동을 삭제 시점으로 보고, 시스템이 붙인 이름은 도구의 이름 변경으로 세지 않는다.
+  pending_delete_path_keywords: ["$Extend\\$Deleted"]
+  pending_delete_name_regex: "^[0-9A-Fa-f]{24}$"
+  # 실험 환경 경로: 이 글자가 들어간 행은 존재 흔적과 레지스트리 실행 흔적(UserAssist·BAM·MUICache)에서 제외한다.
+  # 설치 파일을 두는 VM 공유 폴더는 실험 환경일 뿐 도구가 설치된 곳이 아니다.
+  # 표기가 흔적마다 달라(\\vmware-host\..., \Device\Mup\vmware-host\..., UNC\vmware-host\...) 이름만 적는다.
+  # Prefetch는 실행 파일 이름만 보므로 경로로 거를 수 없다. 설치 파일 이름이 본체와 겹치면 설치 파일 이름을 바꿔 쓴다.
+  ignore_env_path_keywords: ["vmware-host"]
+
+# name_rules의 type
+#   charset: 모든 새 이름이 value(정규식 전체 일치)에 들어야 한다. 선택 조건 same_length(원래 이름과 길이 같음),
+#            keep_dots(점의 위치가 원래 이름과 같음), min_unique_chars(점을 뺀 글자 종류 수), min_renames·max_renames(이름 변경 횟수)
+#   repeated_char: 모든 새 이름이 한 글자의 반복(점 제외)
+tools:
+  - id: eraser
+    name: "Eraser"                       # 6.2.0.2996, R16
+    executables: ["ERASER.EXE"]
+    presence:
+      keywords: ["\\program files\\eraser\\", "eraser.heidi", "heidi computers", "\\software\\eraser", "the eraser project"]
+    journal:
+      name_rules:
+        # R16: 7회, 원래 이름과 같은 길이, 영문 대소문자·숫자·기호·공백(점은 나오지 않음)
+        - {type: charset, value: "[\\x20-\\x2D\\x2F-\\x7E]+", same_length: true, min_renames: 2}
+
+  - id: easttec
+    name: "east-tec Eraser"              # 15.0, R17
+    executables: ["ETERASER.EXE"]
+    presence:
+      keywords: ["east-tec", "east technologies", "east_technologies"]
+    journal:
+      name_rules:
+        # R17: 25회, 영어 대문자만, 길이와 점 위치 유지. 2010년 연구의 'wip' 확장자는 삭제 뒤 임시 파일에서만 나타남
+        - {type: charset, value: "[A-Z.]+", same_length: true, keep_dots: true, min_unique_chars: 2, min_renames: 2}
+
+  - id: sdelete
+    name: "SDelete"                      # 2.06, R18
+    executables: ["SDELETE.EXE", "SDELETE64.EXE", "SDELETE64A.EXE"]
+    presence:
+      keywords: ["\\sysinternals\\sdelete"]   # EULA 수락 시 HKCU\Software\Sysinternals\SDelete
+    journal:
+      name_rules:
+        - {type: repeated_char}          # R18: 26회, AAAAAAAAAA.AAA ~ ZZZZZZZZZZ.ZZZ (공식 문서와 일치)
+
+  - id: bleachbit
+    name: "BleachBit"                    # 6.0.4, R19
+    executables: ["BLEACHBIT.EXE", "BLEACHBIT_CONSOLE.EXE"]
+    presence:
+      keywords: ["bleachbit"]
+    journal:
+      name_rules:
+        # R19: 1회, 원래 이름과 같은 길이, 소문자·숫자·기호(대문자와 점은 나오지 않음)
+        - {type: charset, value: "[\\x20-\\x2D\\x2F-\\x40\\x5B-\\x7E]+", same_length: true, max_renames: 1}
+
+  - id: moo0
+    name: "Moo0 File Shredder"           # 1.23, R20
+    executables: ["FILESHREDDER.EXE"]    # R20: C:\Program Files (x86)\Moo0\FileShredder 1.23\FileShredder.exe
+    presence:
+      keywords: ["moo0"]
+    journal:
+      name_rules:
+        # R20: 2회, 영문 대소문자·숫자, 길이와 점 위치 유지(소문자나 숫자가 하나 이상)
+        - {type: charset, value: "(?=.*[a-z0-9])[A-Za-z0-9.]+", same_length: true, keep_dots: true}
