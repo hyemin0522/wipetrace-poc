@@ -3,7 +3,6 @@
 """
 합성 테스트 자료 생성기 - PoC 코드가 의도대로 동작하는지 확인하기 위한 '가짜' EZ Tools CSV.
 ※ 실험 결과가 아니다. 열 이름만 PECmd/RECmd/AmcacheParser/MFTECmd 출력 형식을 따른다.
-   실제 실험 CSV로 돌렸을 때 열 이름이 다르면 wipetrace.py의 읽기 부분을 맞춘다.
 """
 import csv
 import datetime as dt

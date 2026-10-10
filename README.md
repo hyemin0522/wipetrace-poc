@@ -4,17 +4,23 @@ Windows 11에서 완전삭제 도구가 **있었는지**, **실행되었는지**
 
 ## 1. 저장소 구성
 
-| 경로 | 내용 |
-|---|---|
-| `wipetrace.py` | 판별기(코드 0.5.1, 고정본) |
-| `evaluate.py` | 판별 결과를 정답표와 대조하는 채점기(고정본) |
-| `signatures.yaml` | 도구별 시그니처와 판별 규칙(0.6, 고정본) |
-| `freeze_manifest.json` | 고정 시각과 세 파일의 SHA-256 |
-| `tests/` | 합성 CSV로 코드 동작을 확인하는 단위 테스트(실험 결과가 아님) |
+```
+wipetrace-poc/
+├── wipetrace.py                  # 판별기 본체
+├── signatures.yaml               # 도구별 시그니처와 판별 규칙
+├── evaluate.py                   # 판별 결과를 정답표와 대조하는 채점기
+├── freeze_manifest.json          # 고정 시각과 세 파일의 SHA-256
+└── tests/
+    ├── make_synthetic.py         # 테스트용 합성 CSV 생성
+    ├── test_wipetrace.py         # 단위 테스트 31개
+    ├── answers_synthetic.csv     # 합성 자료의 정답표
+    └── results_synthetic.csv     # 합성 자료의 판별 결과
+```
 
 ## 2. 고정 상태
 
 - 고정 시각: 2026-10-05 15:42:45 UTC
+- 버전: `wipetrace.py` 0.5.1, `signatures.yaml` 0.6
 - 고정 뒤에는 `wipetrace.py`, `evaluate.py`, `signatures.yaml`을 수정하지 않았습니다. 세 파일의 SHA-256은 `freeze_manifest.json`에도 있습니다.
 
 | 파일 | SHA-256 |
