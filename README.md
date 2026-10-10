@@ -9,7 +9,7 @@ wipetrace-poc/
 ├── wipetrace.py                  # 판별기 본체
 ├── signatures.yaml               # 도구별 시그니처와 판별 규칙
 ├── evaluate.py                   # 판별 결과를 정답표와 대조하는 채점기
-├── freeze_manifest.json          # 고정 시각과 세 파일의 SHA-256
+├── freeze_manifest.json          # 고정본 세 파일의 SHA-256
 └── tests/
     ├── make_synthetic.py         # 테스트용 합성 CSV 생성
     ├── test_wipetrace.py         # 단위 테스트 31개
@@ -19,7 +19,6 @@ wipetrace-poc/
 
 ## 2. 고정 상태
 
-- 고정 시각: 2026-10-05 15:42:45 UTC
 - 버전: `wipetrace.py` 0.5.1, `signatures.yaml` 0.6
 - 고정 뒤에는 `wipetrace.py`, `evaluate.py`, `signatures.yaml`을 수정하지 않았습니다. 세 파일의 SHA-256은 `freeze_manifest.json`에도 있습니다.
 
@@ -92,10 +91,6 @@ python -m unittest tests/test_wipetrace.py -v
 
 ## 5. 한계
 
-- 변경 저널에는 프로세스 ID가 없으므로 도구 연계는 **정황**입니다. 도구 연계가 성립하지 않았다는 결과는 "삭제하지 않았다"는 뜻이 아닙니다.
-- 판별기는 데이터 영역(원래 저장 위치의 내용), Prefetch의 참조 파일 목록, 예약 작업, Compatibility Assistant 기록을 읽지 않습니다.
-- 이름 변경 규칙은 도구별 1회 관찰(파일 6개)로 정한 것입니다. 도구 버전이나 설정이 바뀌면 맞지 않을 수 있습니다. 확장자가 없는 파일에서는 Eraser와 Moo0 File Shredder의 규칙이 겹칠 수 있습니다.
-- 규칙을 정하고 확인한 자료는 도구별 1회씩이고 가상머신 한 대의 한 가지 환경(Windows 11, NTFS, 네트워크 미연결)에서 수집했습니다. 다른 환경으로 일반화할 수 없습니다.
-- Moo0 File Shredder의 실행 파일 이름(`FileShredder.exe`)은 흔한 이름이라 다른 제품과 겹칠 수 있습니다.
-- `DataOverwrite`가 있어도 파일 전체가 덮어써졌다는 뜻은 아닙니다. 판별 결과는 완전삭제 의심과 도구 연계 정황까지입니다.
-- 설치 파일 이름이 도구 실행 파일과 같으면 설치만 한 경우에도 실행 흔적이 있는 것으로 판별됩니다.
+- 변경 저널에는 프로세스 정보가 없으므로 도구 연계는 **정황**입니다. 도구 연계가 성립하지 않았다는 결과는 "삭제하지 않았다"는 뜻이 아닙니다.
+- 완전삭제 의심 패턴은 일반적인 파일 작업에서도 나타날 수 있습니다. 덮어쓰기 기록이 있어도 파일 전체가 덮어써졌다는 뜻은 아닙니다.
+- 이름 변경 규칙은 특정 버전의 도구 5개를 한 가지 환경에서 관찰하여 정한 것입니다. 도구 버전이나 설정이 바뀌면 맞지 않을 수 있습니다.
